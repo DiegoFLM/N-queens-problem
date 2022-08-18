@@ -1,3 +1,12 @@
+# language: es
+# encoding: utf-8
+# Archivo: VerificarCromosoma.feature
+# Autores: Diego Ledesma, José David Barona, José A Hurtado
+# Fecha creación: 2022-07-10
+# Fecha última modificación: 2022-08-17
+# Versión: 0.2
+# Licencia: GPL
+
 =begin
   Cada cromosoma tiene la función principal de representar una configuración de N damas en un tablero de NxN.
 Existe la restricción de que en cada columna sólo puede haber una dama. Lo mismo ocurre para cada fila. Con lo cual las damas sólo pueden atacarse en diagonal.
@@ -11,20 +20,15 @@ class Cromosoma
 
   #@positions: [vector de enteros] la posición i de este vector almacena la fila en la que está ubicada la dama de la columna i.
   @positions = []
-  
+  @@n = 0
   
   def initialize(v)
     @@n = v.size
     @positions = Array.new()
     @positions = v
-    #a = @positions[0] 
     @behavior = self.calcBehavior
   end 
 
-
-  def setN( newN )
-    @@n = newN
-  end
 
   def getN()
     return @@n
@@ -52,8 +56,6 @@ class Cromosoma
       crom[i] = pool[r]   
       pool.delete(pool[r])
     end
-    #p "crom = #{crom}"
-    #newCrom = Cromosoma.new(crom)
     return crom
   end
 
@@ -104,7 +106,13 @@ class Cromosoma
 
 
 =begin
-  Este método cuenta la candida de amenazas mutuas entre damas. Si hay sólamente dos damas, en un tablero de 2x2 donde es inevitable que se amenacen, la cantidad de amenazas mutuas es sólamente 1.
+  Un ataque mutuo es una pareja de damas en la misma diagonal.
+  Los ataques mutuos tienen en cuenta que un ataque entre dos damas 
+  puede ocurrir a pesar de que haya otra dama atravesada en medio.
+  Si en una posición hay únicamente dos damas atacándose mutuamente,
+  la cantidad de ataques mutuos es 1.
+  La máxima cantidad de ataques mutuos es 28, y ocurre cuando todas las 
+  damas están en la misma diagonal.
 =end
   def mutualThreats
     threats = 0
@@ -115,7 +123,9 @@ class Cromosoma
         end
 
 =begin
-  Si la diferencia entre la filas y la diferencia entre las columnas de dos damas son iguales, entonces las damas se están amenazando en diagonal.        
+  Si la diferencia entre la filas y la diferencia entre las 
+  columnas de   dos damas son iguales, entonces las damas se están 
+  amenazando en diagonal.        
 =end
         if (i - j).abs() == (@positions[i] - @positions[j]).abs()
           threats = threats + 1
@@ -127,9 +137,7 @@ class Cromosoma
   end
 
 
-=begin
-Función de aptitud normalizada.
-=end
+  #Función de aptitud normalizada.
   def fitness
     maxThreats = (@@n * (@@n - 1) / 2)
     if @@n <= 1
@@ -137,7 +145,7 @@ Función de aptitud normalizada.
     end
 
     f = (maxThreats.to_f - self.mutualThreats.to_f ) / maxThreats.to_f
-    #p "f = (maxThreats - self.mutualThreats) = #{ maxThreats - self.mutualThreats}"
+
     if f == 1
       p "TENEMOS UNA SOLUCIÓN: #{self.getPositions}"
     end
@@ -167,7 +175,7 @@ Función de aptitud normalizada.
 
   
 
-  #Distancia media entre damas
+  #Distancia vertical media entre damas consecutivas
   def meanConsecutive
     consecDist = 0
     for i in 0...(@@n - 1)
